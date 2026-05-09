@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Golden Fork — Chat</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #374151; border-radius: 4px; }
+
+    @keyframes blink {
+      0%, 80%, 100% { opacity: 0.2; transform: scale(0.85); }
+      40% { opacity: 1; transform: scale(1); }
+    }
+    .dot { animation: blink 1.2s infinite ease-in-out; }
+    .dot:nth-child(2) { animation-delay: 0.2s; }
+    .dot:nth-child(3) { animation-delay: 0.4s; }
+
+    .message-text { white-space: pre-wrap; word-break: break-word; }
+  </style>
+</head>
+<body class="bg-gray-950 text-white h-screen flex flex-col font-sans antialiased">
+
+  <!-- ── Header ─────────────────────────────────────────── -->
+  <header class="shrink-0 bg-gray-900 border-b border-gray-800 px-4 py-3 flex items-center gap-3">
+    <div class="w-9 h-9 rounded-full bg-amber-500 flex items-center justify-center text-base select-none">🍴</div>
+    <div>
+      <p class="font-semibold text-sm leading-tight">The Golden Fork</p>
+      <p class="text-xs text-green-400 leading-tight">● Online now</p>
+    </div>
+  </header>
+
+  <!-- ── Messages ───────────────────────────────────────── -->
+  <main id="chat" class="flex-1 overflow-y-auto px-4 py-5 space-y-4">
+
+    <!-- Welcome bubble -->
+    <div class="flex items-end gap-2">
+      <div class="w-7 h-7 rounded-full bg-amber-500 flex items-center justify-center text-xs shrink-0 mb-0.5">🍴</div>
+      <div class="bg-gray-800 rounded-2xl rounded-bl-sm px-4 py-3 max-w-sm text-sm leading-relaxed text-gray-100 message-text">
+Welcome to <strong>The Golden Fork</strong>! 👋
+
+I can help you with our menu, hours, location, reservations, or anything else about us. What can I do for you today?</div>
+    </div>
+
+  </main>
+
+  <!-- ── Input bar ───────────────────────────────────────── -->
+  <footer class="shrink-0 bg-gray-900 border-t border-gray-800 px-4 py-3">
+    <div class="max-w-2xl mx-auto flex items-end gap-2">
+      <div class="flex-1 bg-gray-800 border border-gray-700 rounded-2xl px-4 py-2.5 flex items-end">
+        <textarea
+          id="input"
+          rows="1"
+          placeholder="Ask about menu, hours, reservations…"
+          class="flex-1 bg-transparent text-sm text-white placeholder-gray-500 resize-none outline-none max-h-32 leading-relaxed"
+        ></textarea>
+      </div>
+      <button
+        id="send-btn"
+        title="Send"
+        class="w-10 h-10 shrink-0 rounded-xl bg-amber-500 hover:bg-amber-400 disabled:bg-gray-700 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+      >
+        <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+        </svg>
+      </button>
+    </div>
+    <p class="text-center text-xs text-gray-600 mt-2 select-none">
+      Answers are based only on restaurant data
+    </p>
+  </footer>
+
+  <script>
+    // ── Config ─────────────────────────────────────────────
+    // Replace with your deployed Render/Railway backend URL before deploying.
+    const BACKEND_URL = "https://your-backend.onrender.com";
+
+    // ── State ──────────────────────────────────────────────
+    let sessionId = localStorage.getItem("gf_session") || null;
+    let busy = false;
+
+    const chat    = document.getElementById("chat");
+    const input   = document.getElementById("input");
+    const sendBtn = document.getElementById("send-btn");
+
+    // ── Auto-resize textarea ───────────────────────────────
+    input.addEventListener("input", () => {
+      input.style.height = "auto";
+      input.style.height = Math.min(input.scrollHeight, 128) + "px";
+    });
+
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
+    });
+
+    sendBtn.addEventListener("click", send);
+
+    // ── Helpers ────────────────────────────────────────────
+    function scrollBottom() {
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    function safe(text) {
+      const el = document.createElement("div");
+      el.appendChild(document.createTextNode(text));
+      return el.innerHTML;
+    }
+
+    function addUserBubble(text) {
+      const row = document.createElement("div");
+      row.className = "flex justify-end";
+      row.innerHTML = `
+        <div class="bg-amber-500 rounded-2xl rounded-br-sm px-4 py-3 max-w-sm text-sm leading-relaxed text-white message-text">${safe(text)}</div>
+      `;
+      chat.appendChild(row);
+      scrollBottom();
+    }
+
+    function addBotBubble() {
+      const row = document.createElement("div");
+      row.className = "flex items-end gap-2";
+      row.innerHTML = `
+        <div class="w-7 h-7 rounded-full bg-amber-500 flex items-center justify-center text-xs shrink-0 mb-0.5">🍴</div>
+        <div class="bg-gray-800 rounded-2xl rounded-bl-sm px-4 py-3 max-w-sm text-sm leading-relaxed text-gray-100 message-text bot-bubble">
+          <span class="typing flex gap-1 items-center py-0.5">
+            <span class="dot w-1.5 h-1.5 rounded-full bg-gray-400 inline-block"></span>
+            <span class="dot w-1.5 h-1.5 rounded-full bg-gray-400 inline-block"></span>
+            <span class="dot w-1.5 h-1.5 rounded-full bg-gray-400 inline-block"></span>
+          </span>
+        </div>
+      `;
+      chat.appendChild(row);
+      scrollBottom();
+      return row.querySelector(".bot-bubble");
+    }
+
+    // ── Main send logic ────────────────────────────────────
+    async function send() {
+      const msg = input.value.trim();
+      if (!msg || busy) return;
+
+      busy = true;
+      sendBtn.disabled = true;
+      input.value = "";
+      input.style.height = "auto";
+
+      addUserBubble(msg);
+      const botEl = addBotBubble();
+      let hasContent = false;
+
+      try {
+        const res = await fetch(`${BACKEND_URL}/chat`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: msg, session_id: sessionId }),
+        });
+
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+        const reader  = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop() ?? "";
+
+          for (const line of lines) {
+            if (!line.startsWith("data: ")) continue;
+            try {
+              const ev = JSON.parse(line.slice(6));
+
+              if (ev.type === "start") {
+                sessionId = ev.session_id;
+                localStorage.setItem("gf_session", sessionId);
+
+              } else if (ev.type === "chunk") {
+                if (!hasContent) { botEl.innerHTML = ""; hasContent = true; }
+                botEl.textContent += ev.content;
+                scrollBottom();
+
+              } else if (ev.type === "error") {
+                botEl.innerHTML = `<span class="text-red-400">${safe(ev.content)}</span>`;
+
+              }
+            } catch {}
+          }
+        }
+
+        if (!hasContent) botEl.innerHTML = '<span class="text-gray-500 italic">No response.</span>';
+
+      } catch (err) {
+        botEl.innerHTML = `<span class="text-red-400">Connection error — is the backend running?</span>`;
+      } finally {
+        busy = false;
+        sendBtn.disabled = false;
+        input.focus();
+      }
+    }
+  </script>
+</body>
+</html>

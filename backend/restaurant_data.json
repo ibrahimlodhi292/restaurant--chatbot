@@ -1,0 +1,58 @@
+{
+  "name": "The Golden Fork",
+  "tagline": "Fresh ingredients, unforgettable flavors",
+  "location": "123 Main Street, Downtown",
+  "phone": "+1 (555) 123-4567",
+  "email": "hello@goldenfork.com",
+  "hours": {
+    "monday_to_friday": "11:00 AM - 10:00 PM",
+    "saturday": "10:00 AM - 11:00 PM",
+    "sunday": "10:00 AM - 9:00 PM"
+  },
+  "menu": {
+    "starters": [
+      { "item": "Garlic Bread", "price": 4.50 },
+      { "item": "Caesar Salad", "price": 8.00 },
+      { "item": "Chicken Wings (6 pcs)", "price": 9.00 },
+      { "item": "Mozzarella Sticks", "price": 7.50 }
+    ],
+    "mains": [
+      { "item": "Classic Beef Burger", "price": 12.00 },
+      { "item": "Margherita Pizza", "price": 14.00 },
+      { "item": "Grilled Salmon", "price": 18.00 },
+      { "item": "Pasta Carbonara", "price": 13.00 },
+      { "item": "BBQ Chicken Sandwich", "price": 11.00 },
+      { "item": "Veggie Wrap", "price": 10.00 },
+      { "item": "Steak (8oz)", "price": 24.00 }
+    ],
+    "desserts": [
+      { "item": "Chocolate Brownie", "price": 6.00 },
+      { "item": "Cheesecake Slice", "price": 6.50 },
+      { "item": "Ice Cream (2 scoops)", "price": 5.00 }
+    ],
+    "drinks": [
+      { "item": "Soft Drinks (Coke, Sprite, etc.)", "price": 2.50 },
+      { "item": "Fresh Juice (Orange, Apple, Mango)", "price": 4.00 },
+      { "item": "Coffee / Tea", "price": 3.00 },
+      { "item": "Milkshake (Chocolate or Vanilla)", "price": 5.50 },
+      { "item": "Sparkling Water", "price": 2.00 }
+    ]
+  },
+  "reservation_policy": "Reservations are recommended for groups of 4 or more. Walk-ins are welcome based on availability. To book a table, call us at +1 (555) 123-4567 or email hello@goldenfork.com.",
+  "delivery": {
+    "available": true,
+    "fee": 3.00,
+    "minimum_order": 15.00,
+    "estimated_time": "30-45 minutes",
+    "how_to_order": "Call us or order through our website."
+  },
+  "payment_methods": ["Cash", "Credit Card (Visa, Mastercard, Amex)", "Apple Pay", "Google Pay"],
+  "special_offers": [
+    "Happy Hour: 25% off all drinks, Monday to Friday 3 PM - 6 PM",
+    "Family Deal: 2 mains + 2 sides + 2 soft drinks for $35",
+    "Loyalty Card: Buy 10 meals, get 1 free"
+  ],
+  "parking": "Free parking available in our rear lot and on Main Street.",
+  "wifi": "Free WiFi available. Ask staff for the password.",
+  "dietary_options": "We offer vegetarian, vegan, and gluten-free options. Please inform your server of any allergies."
+}
